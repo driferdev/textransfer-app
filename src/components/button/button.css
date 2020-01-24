@@ -1,0 +1,15 @@
+.main-btn {
+    background-color: #DD4A0B;
+    font-size: 1.2em;
+    border: 0;
+    padding: 15px 25px;
+    cursor: pointer;
+    color: white;
+    outline: none;
+}
+
+@media only screen and (max-width: 420px){
+    .main-btn {
+        font-size: 0.8em;
+    }
+}
