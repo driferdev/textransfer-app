@@ -1,0 +1,44 @@
+.main-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 675px;
+    margin: 148px auto 0 auto;
+    align-items: center;
+    .description{
+        font-size: 2em;
+        margin-bottom: 24px;
+    }
+}
+
+.space {
+    margin-top: 50px;
+}
+
+footer {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    display: flex;
+    height: 30px;
+    justify-content: center;
+}
+
+@media only screen and (min-width: 351px) and (max-width: 425px){
+    .main-container .description {
+        font-size: 1em;
+    }
+
+    .room-input {
+        font-size: 1em;
+    }
+}
+
+@media only screen and (max-width: 350px){
+    .main-container .description {
+        font-size: 0.8em;
+    }
+
+    .room-input {
+        font-size: 1em;
+    }
+}

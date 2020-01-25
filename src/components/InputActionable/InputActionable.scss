@@ -1,0 +1,35 @@
+.container {
+    display: flex;
+    max-width: 378px;
+    height: 52px;
+    .main-btn {
+        width: 50%;
+    }
+}
+
+input {
+    border: 0;
+    font-size: 2em;
+    text-align: center;
+    padding: 2px 5px;
+    width: 60%;
+    background-color: white;
+    outline: none;
+}
+
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none; 
+}
+
+
+@media only screen and (min-width: 351px) and (max-width: 425px){
+    .container {
+        max-width: 284px;
+    }
+}
+
+@media only screen and (max-width: 350px){
+    .container {
+        max-width: 237px;
+    }
+}

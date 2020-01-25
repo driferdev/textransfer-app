@@ -1,5 +1,7 @@
+@import '../../styles/colors.scss';
+
 .main-btn {
-    background-color: #DD4A0B;
+    background-color: $secondColor;
     font-size: 1.2em;
     border: 0;
     padding: 15px 25px;

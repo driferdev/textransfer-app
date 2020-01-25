@@ -1,11 +1,15 @@
 import React from 'react';
-import logo from './logo.svg';
-import Home from './components/home/home'
-import './App.css';
+import { BrowserRouter, Route } from 'react-router-dom';
+import Home from './components/Home/Home';
+import Room from './components/Room/Room';
+import './App.scss';
 
 function App() {
   return (
-    <Home/>
+    <BrowserRouter>
+      <Route path="/" exact component={Home}/>
+      <Route path="/room" exact component={Room}/>
+    </BrowserRouter>
   );
 }
 
