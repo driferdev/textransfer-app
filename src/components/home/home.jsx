@@ -8,15 +8,14 @@ import { goToRoom, newRoom } from '../../actions';
 class Home extends React.Component {
     constructor(props) {
         super(props);
-        this.goToRoomPage = this.goToRoomPage.bind(this);
+        this.newRoom = this.newRoom.bind(this);
     }
 
-    goToRoomPage() {
+    newRoom() {
         this.props.newRoom(this.props.history)
     }
 
     render() {
-        //console.log('home', this.props)
         return (
             <div className="main-container">
                 <div className="description">
@@ -25,7 +24,7 @@ class Home extends React.Component {
                     </p>
                 </div>
                 <Button text="NEW ROOM"
-                    onClick={ this.goToRoomPage }
+                    onClick={ this.newRoom }
                     loading={ this.props.newRoomSpinner }/>
                 <div className="space"></div>
                 <InputActionable

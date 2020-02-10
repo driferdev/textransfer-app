@@ -17,6 +17,9 @@ export const newRoom = (history) => {
 }
 
 export const goToRoom = (id, history) => async (dispatch, _) => {
+    if(isNaN(id) || id <= 0) {
+        return;
+    }
     dispatch(roomSpinner('SHOW_GO_ROOM_SPINNER', true));
     getRoom(id).then((_) => {
         dispatch({ type: 'GO_TO_ROOM', payload: id });
