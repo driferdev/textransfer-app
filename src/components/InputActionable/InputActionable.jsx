@@ -6,7 +6,9 @@ import Button from '../Button/Button';
 class InputActionable extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {}
+        this.state = {
+            value: ''
+        }
     }
 
     render() {
@@ -16,8 +18,12 @@ class InputActionable extends React.Component {
                     type={ this.props.inputType }
                     defaultValue={ this.props.inputValue || '' }
                     disabled={ this.props.isInputDisabled || false }
+                    onChange={ e => this.inputValue = e.target.value }
                     placeholder={ this.props.placeholder }/>
-                <Button text={ this.props.buttonText } onClick={ this.props.onButtonClick }></Button>
+                <Button
+                    text={ this.props.buttonText } 
+                    onClick={ e => this.props.onButtonClick(this.inputValue || this.props.inputValue) }
+                    loading={ this.props.loading }/>
             </div>
         );
     }

@@ -7,6 +7,7 @@
     .description{
         font-size: 2em;
         margin-bottom: 24px;
+        text-align: center;
     }
 }
 
@@ -23,7 +24,7 @@ footer {
     justify-content: center;
 }
 
-@media only screen and (min-width: 351px) and (max-width: 425px){
+@media only screen and (min-width: 351px) and (max-width: 425px) {
     .main-container .description {
         font-size: 1em;
     }

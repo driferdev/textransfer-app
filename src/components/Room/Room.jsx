@@ -6,12 +6,24 @@ import Button from '../Button/Button';
 class Room extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {}
+        this.state = {
+            buttonCopyText: 'COPY'
+        }
         this.goToHome = this.goToHome.bind(this);
+        this.copyRoomId = this.copyRoomId.bind(this);
     }
 
-    copyRoomId() {
-
+    copyRoomId(id) {
+        let elem = document.createElement('input');
+        elem.value = id;
+        elem.style.position="fixed";
+        elem.style.top = '-100px';
+        document.body.append(elem);
+        elem.select()
+        document.execCommand("copy");
+        document.body.removeChild(elem);
+        this.setState({ buttonCopyText: 'COPIED' })
+        setTimeout(_ => this.setState({ buttonCopyText: 'COPY' }), 2000);
     }
 
     goToHome() {
@@ -24,16 +36,18 @@ class Room extends React.Component {
                 <div className="actions-container">
                     <InputActionable 
                         inputType="number" 
-                        inputValue="85455"
-                        isInputDisabled={true}
-                        onButtonClick={this.copyRoomId}
-                        buttonText="COPY"/>
+                        inputValue={ this.props.location.state.roomId }
+                        isInputDisabled={ true }
+                        onButtonClick={ this.copyRoomId }
+                        buttonText={ this.state.buttonCopyText }/>
                     <div className="status-container">
                         <span className="text-white">
                             2 Users online
                         </span>
                     </div>
-                    <Button text="GO BACK" onClick={this.goToHome}/>
+                    <Button 
+                        text="GO BACK" 
+                        onClick={this.goToHome}/>
                 </div>
                 <div className="editor-container">
                     <textarea name="" id="" rows="10"></textarea>

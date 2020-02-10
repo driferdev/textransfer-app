@@ -2,41 +2,50 @@ import React from 'react';
 import './Home.scss';
 import Button from '../Button/Button';
 import InputActionable from '../InputActionable/InputActionable';
-import RouterContext from '../../contexts/RouterContext';
+import { connect } from 'react-redux';
+import { goToRoom, newRoom } from '../../actions';
 
 class Home extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {}
-
         this.goToRoomPage = this.goToRoomPage.bind(this);
     }
 
     goToRoomPage() {
-        this.props.history.push('room')
+        this.props.newRoom(this.props.history)
     }
 
     render() {
-        let context = { router: this.props.history }
+        //console.log('home', this.props)
         return (
-                <div className="main-container">
-                    <div className="description">
-                        <p className="text-white">
+            <div className="main-container">
+                <div className="description">
+                    <p className="text-white">
                         Share text between devices instantly with Cliper
-                        </p>
-                    </div>
-                    <RouterContext.Provider value={context}>
-                        <Button text="NEW ROOM" onClick={this.goToRoomPage}/>
-                        <div className="space"></div>
-                        <InputActionable 
-                            inputType="number" 
-                            placeholder="Room ID"
-                            onButtonClick={this.goToRoomPage}
-                            buttonText="GO"/>
-                    </RouterContext.Provider>
+                    </p>
                 </div>
+                <Button text="NEW ROOM"
+                    onClick={ this.goToRoomPage }
+                    loading={ this.props.newRoomSpinner }/>
+                <div className="space"></div>
+                <InputActionable
+                    inputType="number"
+                    placeholder="Room ID"
+                    loading={ this.props.goRoomSpinner }
+                    onButtonClick={ (id) => this.props.goToRoom(id, this.props.history) }
+                    buttonText="GO"/>
+            </div>
         );
     }
 }
 
-export default Home
+const mapStateToProps = (state) => {
+    return {
+        room: state.newRoom,
+        toRoom: state.goToRoom,
+        newRoomSpinner: state.newRoomSpinner,
+        goRoomSpinner: state.goRoomSpinner,
+    }
+}
+
+export default connect(mapStateToProps, { newRoom, goToRoom })(Home)
