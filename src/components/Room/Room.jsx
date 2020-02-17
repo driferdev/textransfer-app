@@ -2,15 +2,20 @@ import React from 'react';
 import './Room.scss';
 import InputActionable from '../InputActionable/InputActionable';
 import Button from '../Button/Button';
+import socketIOClient from "socket.io-client";
 
 class Room extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            buttonCopyText: 'COPY'
+            buttonCopyText: 'COPY',
+            text: '',
+            totalUsers: 1,
         }
         this.goToHome = this.goToHome.bind(this);
         this.copyRoomId = this.copyRoomId.bind(this);
+        this.onEditorChange = this.onEditorChange.bind(this);
+        this.socket = socketIOClient(process.env.REACT_APP_WEB_SOCKET_URL);
     }
 
     copyRoomId(id) {
@@ -27,10 +32,40 @@ class Room extends React.Component {
     }
 
     goToHome() {
-        this.props.history.push('/')
+        this.props.history.push('/');
+    }
+
+    componentDidMount() {
+        let data = {
+            roomName: this.props.location.state.roomId
+        }
+        this.socket.on("total", totalUsers => {
+            this.setState({ totalUsers });
+        });
+        this.socket.on("update", text => {
+            if(this.state.text !== text) {
+                this.setState({ text });
+            }
+        });
+        this.socket.emit('join', data);
+    }
+
+    componentWillUnmount() {
+        let data = {
+            roomName: this.props.location.state.roomId
+        }
+        this.socket.emit('leave', data);
+    }
+
+    onEditorChange(data) {
+        let text = data.target.value;
+        this.setState({ text });
+        this.socket.emit('typing', { roomName: this.props.location.state.roomId, text });
     }
 
     render() {
+        let total = this.state.totalUsers;
+        let label = total === 1 ? 'Session' : 'Sessions';
         return (
             <div className="room-container">
                 <div className="actions-container">
@@ -42,7 +77,7 @@ class Room extends React.Component {
                         buttonText={ this.state.buttonCopyText }/>
                     <div className="status-container">
                         <span className="text-white">
-                            2 Users online
+                            { total } { label }
                         </span>
                     </div>
                     <Button 
@@ -50,7 +85,12 @@ class Room extends React.Component {
                         onClick={this.goToHome}/>
                 </div>
                 <div className="editor-container">
-                    <textarea name="" id="" rows="10"></textarea>
+                    <textarea
+                        onChange={ this.onEditorChange }
+                        value={ this.state.text }
+                        name="" 
+                        id="" 
+                        rows="10"/>
                 </div>
             </div>
         );
