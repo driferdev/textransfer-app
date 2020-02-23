@@ -3,6 +3,12 @@ import './Room.scss';
 import InputActionable from '../InputActionable/InputActionable';
 import Button from '../Button/Button';
 import socketIOClient from "socket.io-client";
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
+
+function Alert(props) {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
 class Room extends React.Component {
     constructor(props) {
@@ -11,6 +17,7 @@ class Room extends React.Component {
             buttonCopyText: 'COPY',
             text: '',
             totalUsers: 1,
+            showError: false
         }
         this.goToHome = this.goToHome.bind(this);
         this.copyRoomId = this.copyRoomId.bind(this);
@@ -37,10 +44,10 @@ class Room extends React.Component {
 
     componentDidMount() {
         let data = {
-            roomName: this.props.location.state.roomId
+            roomName: this.props.match.params.name
         }
-        this.socket.on("total", totalUsers => {
-            this.setState({ totalUsers });
+        this.socket.on("roomData", data => {
+            this.setState({ totalUsers: data.totalUsers, text: data.text });
         });
         this.socket.on("update", text => {
             if(this.state.text !== text) {
@@ -52,7 +59,7 @@ class Room extends React.Component {
 
     componentWillUnmount() {
         let data = {
-            roomName: this.props.location.state.roomId
+            roomName: this.props.match.params.name
         }
         this.socket.emit('leave', data);
     }
@@ -60,7 +67,7 @@ class Room extends React.Component {
     onEditorChange(data) {
         let text = data.target.value;
         this.setState({ text });
-        this.socket.emit('typing', { roomName: this.props.location.state.roomId, text });
+        this.socket.emit('typing', { roomName: this.props.match.params.name, text });
     }
 
     render() {
@@ -71,7 +78,7 @@ class Room extends React.Component {
                 <div className="actions-container">
                     <InputActionable 
                         inputType="number" 
-                        inputValue={ this.props.location.state.roomId }
+                        inputValue={ this.props.match.params.name }
                         isInputDisabled={ true }
                         onButtonClick={ this.copyRoomId }
                         buttonText={ this.state.buttonCopyText }/>
@@ -90,8 +97,20 @@ class Room extends React.Component {
                         value={ this.state.text }
                         name="" 
                         id="" 
-                        rows="10"/>
+                        rows="10"/>0
                 </div>
+                <Snackbar
+                    open={this.state.showError} 
+                    autoHideDuration={6000} 
+                    onClose={()=> this.setState({showError: false})}
+                    >
+                    <Alert 
+                        onClose={()=> this.setState({showError: false})} 
+                        severity="error"
+                        >
+                        This is a errr message!
+                    </Alert>
+                </Snackbar>
             </div>
         );
     }

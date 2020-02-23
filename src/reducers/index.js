@@ -31,9 +31,35 @@ const goRoomSpinnerReducer = (show = false, action) => {
     return show;
 }
 
+const snackBarReducer = (state, action) => {
+    if(action.type === 'SHOW_ERROR') {
+        return Object.assign({}, state, {
+            show: true,
+            message: action.payload,
+            severity: 'error'
+        });
+    } else if (action.type === 'SHOW_SUCCESS') {
+        return Object.assign({}, state, {
+            show: true,
+            message: action.payload,
+            severity: 'success'
+        });
+    } else if (action.type === 'HIDE_SNACKBAR') {
+        return Object.assign({}, state, {
+            show: false,
+        });
+    }
+    return {
+        show: false,
+        message: '',
+        severity: 'success'
+    }
+}
+
 export default combineReducers({
     newRoom: newRoomReducer,
     goToRoom: goToRoomReducer,
     newRoomSpinner: newRoomSpinnerReducer,
     goRoomSpinner: goRoomSpinnerReducer,
+    snackBar: snackBarReducer
 })

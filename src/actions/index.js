@@ -7,11 +7,11 @@ export const newRoom = (history) => {
             dispatch({ type: 'CREATE_ROOM', payload: response.data });
             dispatch(roomSpinner('SHOW_ROOM_SPINNER', false));
             history.push({
-                pathname: '/room',
-                state: {
-                    roomId: response.data.room.id
-                }
+                pathname: '/room/'+response.data.room,
             });
+        }).catch((err) => {
+            dispatch({type: 'SHOW_ERROR', payload: err.response.data.error});
+            dispatch(roomSpinner('SHOW_ROOM_SPINNER', false));
         })
     }
 }
@@ -21,15 +21,15 @@ export const goToRoom = (id, history) => async (dispatch, _) => {
         return;
     }
     dispatch(roomSpinner('SHOW_GO_ROOM_SPINNER', true));
-    getRoom(id).then((_) => {
+    getRoom(id).then((response) => {
         dispatch({ type: 'GO_TO_ROOM', payload: id });
         dispatch(roomSpinner('SHOW_GO_ROOM_SPINNER', false));
         history.push({
-            pathname: '/room',
-            state: {
-                roomId: id
-            }
+            pathname: '/room/'+response.data.room,
         });
+    }).catch((err) => {
+        dispatch(roomSpinner('SHOW_GO_ROOM_SPINNER', false));
+        dispatch({type: 'SHOW_ERROR', payload: err.response.data.error});
     })
 }
 
@@ -38,4 +38,8 @@ export const roomSpinner = (type, show) => {
         type: type,
         payload: show
     }
+}
+
+export const handleSnackbar = (type, payload) => {
+    return { type, payload }
 }

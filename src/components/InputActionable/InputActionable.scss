@@ -15,6 +15,7 @@ input {
     width: 60%;
     background-color: white;
     outline: none;
+    border-radius: 0;
 }
 
 input::-webkit-inner-spin-button {
@@ -22,13 +23,16 @@ input::-webkit-inner-spin-button {
 }
 
 
-@media only screen and (min-width: 351px) and (max-width: 425px){
+@media only screen and (min-width: 361px) and (max-width: 425px){
     .container {
         max-width: 284px;
     }
+    input {
+        font-size: 1.3em;
+    }
 }
 
-@media only screen and (max-width: 350px){
+@media only screen and (max-width: 360px){
     .container {
         max-width: 237px;
     }
