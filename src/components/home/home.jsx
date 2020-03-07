@@ -3,7 +3,7 @@ import './Home.scss';
 import Button from '../Button/Button';
 import InputActionable from '../InputActionable/InputActionable';
 import { connect } from 'react-redux';
-import { goToRoom, newRoom, handleSnackbar } from '../../actions';
+import { newRoom, handleSnackbar } from '../../actions';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 
@@ -16,6 +16,7 @@ class Home extends React.Component {
         super(props);
         this.newRoom = this.newRoom.bind(this);
         this.onCloseSnackbar = this.onCloseSnackbar.bind(this);
+        this.goToRoom = this.goToRoom.bind(this);
     }
 
     newRoom() {
@@ -26,6 +27,12 @@ class Home extends React.Component {
         this.props.handleSnackbar('HIDE_SNACKBAR', '');
     }
 
+    goToRoom(id) {
+        this.props.history.push({
+            pathname: '/room/'+id,
+        });
+    }
+    
     render() {
         return (
             <div className="main-container">
@@ -41,8 +48,7 @@ class Home extends React.Component {
                 <InputActionable
                     inputType="number"
                     placeholder="Room ID"
-                    loading={ this.props.goRoomSpinner }
-                    onButtonClick={ (id) => this.props.goToRoom(id, this.props.history) }
+                    onButtonClick={ this.goToRoom }
                     buttonText="GO"/>
                 <Snackbar
                     anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
@@ -50,7 +56,7 @@ class Home extends React.Component {
                     autoHideDuration={ 3000 }
                     onClose={ this.onCloseSnackbar }
                     >
-                    <Alert 
+                    <Alert
                         onClose={ this.onCloseSnackbar } 
                         severity={ this.props.snackbar.severity }
                         >
@@ -64,12 +70,10 @@ class Home extends React.Component {
 
 const mapStateToProps = (state) => {
     return {
-        room: state.newRoom,
-        toRoom: state.goToRoom,
         newRoomSpinner: state.newRoomSpinner,
         goRoomSpinner: state.goRoomSpinner,
         snackbar: state.snackBar,
     }
 }
 
-export default connect(mapStateToProps, { newRoom, goToRoom, handleSnackbar })(Home)
+export default connect(mapStateToProps, { newRoom, handleSnackbar })(Home)

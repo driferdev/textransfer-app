@@ -5,10 +5,21 @@ import Button from '../Button/Button';
 import socketIOClient from "socket.io-client";
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
+import { connect } from 'react-redux';
+import { getRoom, handleSnackbar } from '../../actions';
+import ClipLoader from "react-spinners/ClipLoader";
+import { css } from "@emotion/core";
 
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
+
+const override = css`
+    @media only screen and (max-width: 420px){
+        width: 30px;
+        height: 30px;
+    }
+`;
 
 class Room extends React.Component {
     constructor(props) {
@@ -17,11 +28,16 @@ class Room extends React.Component {
             buttonCopyText: 'COPY',
             text: '',
             totalUsers: 1,
-            showError: false
         }
         this.goToHome = this.goToHome.bind(this);
         this.copyRoomId = this.copyRoomId.bind(this);
         this.onEditorChange = this.onEditorChange.bind(this);
+        this.getRoom = this.getRoom.bind(this);
+        this.listenWebSocketEvents = this.listenWebSocketEvents.bind(this);
+        this.renderEditor = this.renderEditor.bind(this);
+        this.renderLoadingSpinner = this.renderLoadingSpinner.bind(this);
+        this.renderSnackbar = this.renderSnackbar.bind(this);
+        this.onCloseSnackbar = this.onCloseSnackbar.bind(this);
         this.socket = socketIOClient(process.env.REACT_APP_WEB_SOCKET_URL);
     }
 
@@ -38,13 +54,22 @@ class Room extends React.Component {
         setTimeout(_ => this.setState({ buttonCopyText: 'COPY' }), 2000);
     }
 
+    getRoom(roomName) {
+        this.props.getRoom(roomName);
+    }
+
     goToHome() {
         this.props.history.push('/');
     }
 
     componentDidMount() {
+        const roomName = this.props.match.params.name;
+        this.getRoom(roomName);
+    }
+
+    listenWebSocketEvents(roomName) {
         let data = {
-            roomName: this.props.match.params.name
+            roomName
         }
         this.socket.on("roomData", data => {
             this.setState({ totalUsers: data.totalUsers, text: data.text });
@@ -70,11 +95,11 @@ class Room extends React.Component {
         this.socket.emit('typing', { roomName: this.props.match.params.name, text });
     }
 
-    render() {
+    renderEditor() {
         let total = this.state.totalUsers;
         let label = total === 1 ? 'Session' : 'Sessions';
         return (
-            <div className="room-container">
+            <div className="wrapper">
                 <div className="actions-container">
                     <InputActionable 
                         inputType="number" 
@@ -99,21 +124,74 @@ class Room extends React.Component {
                         id="" 
                         rows="10"/>0
                 </div>
-                <Snackbar
-                    open={this.state.showError} 
-                    autoHideDuration={6000} 
-                    onClose={()=> this.setState({showError: false})}
+            </div>
+        );
+    }
+    
+    renderLoadingSpinner() {
+        return (
+            <div className="loader-box">
+                <ClipLoader
+                    css={ override }
+                    size={ 80 }
+                    color={ "white" }
+                    loading={ true }
+                />
+            </div>
+        );
+    }
+
+    onCloseSnackbar() {
+        console.log('click')
+        this.props.handleSnackbar('HIDE_SNACKBAR', '');
+    }
+
+    renderSnackbar() {
+        console.log(this.props)
+        let options = this.props.snackbar;
+
+        return (
+            <Snackbar
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                open={ options.show } 
+                autoHideDuration={ 6000 }
+                onClose={ this.onCloseSnackbar } 
+                >
+                <Alert 
+                    onClose={ this.onCloseSnackbar }
+                    severity={ options.severity }
                     >
-                    <Alert 
-                        onClose={()=> this.setState({showError: false})} 
-                        severity="error"
-                        >
-                        This is a errr message!
-                    </Alert>
-                </Snackbar>
+                    { options.message }
+                </Alert>
+            </Snackbar>
+        );
+    }
+
+    render() {
+        let html = this.renderLoadingSpinner();
+        if(this.props.room.id != null) {
+            html = this.renderEditor();
+        }else if (!this.props.room.id) {
+            // TODO se esta ejecutando aun cuando la sala existe
+            setTimeout(() => {
+                this.goToHome();
+            }, 3000);
+        }
+        return (
+            <div className="room-container">
+                { html }
+                { this.renderSnackbar() }
             </div>
         );
     }
 }
 
-export default Room
+const mapStateToProps = (state) => {
+    return {
+        room: state.room,
+        getRoomSpinner: state.getRoomSpinner,
+        snackbar: state.snackBar,
+    }
+}
+
+export default connect(mapStateToProps, { getRoom, handleSnackbar })(Room)

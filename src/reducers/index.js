@@ -1,13 +1,19 @@
 import { combineReducers } from 'redux';
 
-const newRoomReducer = (_ , action) => {
+const roomReducer = (state , action) => {
     let data = {
-        id: ''
+        id: null
     }
-    if(action.type === 'CREATE_ROOM') {
-        data.id = action.payload.room.id;
+    if(action.type === 'ROOM_LOADED') {
+        return Object.assign({}, state, {
+            id: action.payload.room
+        });
+    } else if (action.type === 'ROOM_ERROR') {
+        return Object.assign(data, state, {
+            id: false
+        });
     }
-    return data;
+    return Object.assign(data, state);
 }
 
 const goToRoomReducer = (id = '', action) => {
@@ -24,8 +30,8 @@ const newRoomSpinnerReducer = (show = false, action) => {
     return show;
 }
 
-const goRoomSpinnerReducer = (show = false, action) => {
-    if(action.type === 'SHOW_GO_ROOM_SPINNER') {
+const getRoomSpinnerReducer = (show = false, action) => {
+    if(action.type === 'SHOW_GET_ROOM_SPINNER') {
         return action.payload;
     }
     return show;
@@ -49,17 +55,18 @@ const snackBarReducer = (state, action) => {
             show: false,
         });
     }
-    return {
+    let defaultState = {
         show: false,
         message: '',
         severity: 'success'
     }
+    return Object.assign(defaultState, state);
 }
 
 export default combineReducers({
-    newRoom: newRoomReducer,
+    room: roomReducer,
     goToRoom: goToRoomReducer,
     newRoomSpinner: newRoomSpinnerReducer,
-    goRoomSpinner: goRoomSpinnerReducer,
+    getRoomSpinner: getRoomSpinnerReducer,
     snackBar: snackBarReducer
 })

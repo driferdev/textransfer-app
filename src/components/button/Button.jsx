@@ -23,10 +23,10 @@ class Button extends React.Component {
                 onClick={this.props.onClick}>
                 <span>{this.props.text}</span>
                 <ClipLoader
-                    css={override}
-                    size={13}
-                    color={"white"}
-                    loading={this.props.loading || false}
+                    css={ override }
+                    size={ 13 }
+                    color={ "white" }
+                    loading={ this.props.loading || false }
                 />
             </button>
         );

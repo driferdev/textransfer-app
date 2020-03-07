@@ -8,6 +8,6 @@ export function createRoom() {
     return instance.get('/room/create');
 }
 
-export function getRoom(name) {
+export function apiGetRoom(name) {
     return instance.get(`/room/${name}`);
 }

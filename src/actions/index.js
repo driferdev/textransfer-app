@@ -1,10 +1,10 @@
-import { createRoom, getRoom } from '../services/api';
+import { createRoom, apiGetRoom } from '../services/api';
 
 export const newRoom = (history) => {
     return async (dispatch, _) => {
         dispatch(roomSpinner('SHOW_ROOM_SPINNER', true));
         createRoom().then((response) => {
-            dispatch({ type: 'CREATE_ROOM', payload: response.data });
+            dispatch({ type: 'ROOM_LOADED', payload: response.data });
             dispatch(roomSpinner('SHOW_ROOM_SPINNER', false));
             history.push({
                 pathname: '/room/'+response.data.room,
@@ -16,21 +16,18 @@ export const newRoom = (history) => {
     }
 }
 
-export const goToRoom = (id, history) => async (dispatch, _) => {
+export const getRoom = (id) => async (dispatch, _) => {
     if(isNaN(id) || id <= 0) {
         return;
     }
-    dispatch(roomSpinner('SHOW_GO_ROOM_SPINNER', true));
-    getRoom(id).then((response) => {
-        dispatch({ type: 'GO_TO_ROOM', payload: id });
-        dispatch(roomSpinner('SHOW_GO_ROOM_SPINNER', false));
-        history.push({
-            pathname: '/room/'+response.data.room,
-        });
+    dispatch(roomSpinner('SHOW_GET_ROOM_SPINNER', true));
+    apiGetRoom(id).then((response) => {
+        dispatch({ type: 'ROOM_LOADED', payload: response.data });
     }).catch((err) => {
-        dispatch(roomSpinner('SHOW_GO_ROOM_SPINNER', false));
         dispatch({type: 'SHOW_ERROR', payload: err.response.data.error});
-    })
+    }).finally(() => {
+        dispatch(roomSpinner('SHOW_GET_ROOM_SPINNER', false));
+    });
 }
 
 export const roomSpinner = (type, show) => {
