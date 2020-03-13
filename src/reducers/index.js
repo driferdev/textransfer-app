@@ -12,6 +12,10 @@ const roomReducer = (state , action) => {
         return Object.assign(data, state, {
             id: false
         });
+    } else if (action.type === 'RESET_ROOM') {
+        return Object.assign(data, state, {
+            id: null
+        });
     }
     return Object.assign(data, state);
 }

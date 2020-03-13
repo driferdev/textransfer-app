@@ -17,6 +17,7 @@ class Home extends React.Component {
         this.newRoom = this.newRoom.bind(this);
         this.onCloseSnackbar = this.onCloseSnackbar.bind(this);
         this.goToRoom = this.goToRoom.bind(this);
+        this.handleRoomNavigation = this.handleRoomNavigation.bind(this);
     }
 
     newRoom() {
@@ -33,6 +34,20 @@ class Home extends React.Component {
         });
     }
     
+    isInputValid(id) {
+        if(isNaN(id) || typeof +id !== 'number' || id === 0){
+            return false;
+        }
+        return true;
+    }
+    
+    handleRoomNavigation(id) {
+        id = +id;
+        if(this.isInputValid(id)) {
+            this.goToRoom(id);
+        }
+    }
+    
     render() {
         return (
             <div className="main-container">
@@ -47,8 +62,8 @@ class Home extends React.Component {
                 <div className="space"></div>
                 <InputActionable
                     inputType="number"
-                    placeholder="Room ID"
-                    onButtonClick={ this.goToRoom }
+                    placeholder="Room"
+                    onButtonClick={ this.handleRoomNavigation }
                     buttonText="GO"/>
                 <Snackbar
                     anchorOrigin={{ vertical: 'top', horizontal: 'center' }}

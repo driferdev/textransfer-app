@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './Room.scss';
 import InputActionable from '../InputActionable/InputActionable';
 import Button from '../Button/Button';
@@ -6,7 +6,7 @@ import socketIOClient from "socket.io-client";
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 import { connect } from 'react-redux';
-import { getRoom, handleSnackbar } from '../../actions';
+import { getRoom, handleSnackbar, resetRoom } from '../../actions';
 import ClipLoader from "react-spinners/ClipLoader";
 import { css } from "@emotion/core";
 
@@ -20,28 +20,70 @@ const override = css`
         height: 30px;
     }
 `;
+let timeoutCleanBtn;
 
-class Room extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            buttonCopyText: 'COPY',
-            text: '',
-            totalUsers: 1,
+const Room = (props) =>{
+
+    const [ buttonCopyText, setButtonCopyText ] = useState('COPY');
+    const [ text, setText ] = useState('');
+    const [ totalUsers, setTotalUsers ] = useState(1);
+    const [ socket, setSocket ] = useState(null);
+    const [ tbnDisabled, setBtnDisabled ] = useState(false);
+
+    const roomNameParam = +props.match.params.name;
+    const roomName = props.room.id;
+    const history = props.history;
+    const getRoomProp =  props.getRoom;
+    
+
+    const goHome = useCallback(() => history.push('/'), [history]);
+    const getRoom = useCallback((roomName) => getRoomProp(roomName), [getRoomProp]);
+    const listenWebSocketEvents = useCallback(() => {
+        socket.on("roomData", data => {
+            setTotalUsers(data.totalUsers);
+            setText(data.text);
+        });
+        socket.on("update", inComingText => {
+            if(inComingText) {
+                setText(inComingText);
+            }
+        });
+        socket.emit('join', { roomName });
+    }, [roomName, socket]);
+
+    useEffect(() => {
+        if(roomName != null) {
+            setSocket(socketIOClient(process.env.REACT_APP_WEB_SOCKET_URL));
         }
-        this.goToHome = this.goToHome.bind(this);
-        this.copyRoomId = this.copyRoomId.bind(this);
-        this.onEditorChange = this.onEditorChange.bind(this);
-        this.getRoom = this.getRoom.bind(this);
-        this.listenWebSocketEvents = this.listenWebSocketEvents.bind(this);
-        this.renderEditor = this.renderEditor.bind(this);
-        this.renderLoadingSpinner = this.renderLoadingSpinner.bind(this);
-        this.renderSnackbar = this.renderSnackbar.bind(this);
-        this.onCloseSnackbar = this.onCloseSnackbar.bind(this);
-        this.socket = socketIOClient(process.env.REACT_APP_WEB_SOCKET_URL);
-    }
+        return () => {
+            setSocket(null);
+        }
+    }, [roomName]);
 
-    copyRoomId(id) {
+    useEffect(() => {
+        if(isNumber(roomNameParam) && roomName === null) {
+            getRoom(roomNameParam)
+        } else if(roomName === null) {
+            goHome();
+        }
+    }, [roomName, roomNameParam, getRoom, goHome]);
+
+    useEffect(() => {
+        if(roomName != null && socket != null) {
+            socket.connect();
+            listenWebSocketEvents();
+        }
+        return () => {
+            if(socket != null) {
+                socket.disconnect();
+                clearTimeout(timeoutCleanBtn);
+            }
+        }
+    }, [roomName, listenWebSocketEvents, socket]);
+
+    
+    function copyRoomId(id) {
+        setBtnDisabled(true);
         let elem = document.createElement('input');
         elem.value = id;
         elem.style.position="fixed";
@@ -50,63 +92,45 @@ class Room extends React.Component {
         elem.select()
         document.execCommand("copy");
         document.body.removeChild(elem);
-        this.setState({ buttonCopyText: 'COPIED' })
-        setTimeout(_ => this.setState({ buttonCopyText: 'COPY' }), 2000);
+        setButtonCopyText('COPIED');
+        timeoutCleanBtn = setTimeout(() => {
+            setButtonCopyText('COPY')
+            setBtnDisabled(false);
+        } , 2000);
     }
 
-    getRoom(roomName) {
-        this.props.getRoom(roomName);
-    }
-
-    goToHome() {
-        this.props.history.push('/');
-    }
-
-    componentDidMount() {
-        const roomName = this.props.match.params.name;
-        this.getRoom(roomName);
-    }
-
-    listenWebSocketEvents(roomName) {
-        let data = {
-            roomName
+    function isNumber(id) {
+        if(isNaN(id) || id <= 0) {
+            return false;
         }
-        this.socket.on("roomData", data => {
-            this.setState({ totalUsers: data.totalUsers, text: data.text });
-        });
-        this.socket.on("update", text => {
-            if(this.state.text !== text) {
-                this.setState({ text });
-            }
-        });
-        this.socket.emit('join', data);
+        return true;
     }
 
-    componentWillUnmount() {
-        let data = {
-            roomName: this.props.match.params.name
-        }
-        this.socket.emit('leave', data);
+    function handleLeavingRoom() {
+        socket.emit('leave', { roomName });
+        props.resetRoom();
+        goHome();
     }
 
-    onEditorChange(data) {
+    function onEditorChange(data) {
         let text = data.target.value;
-        this.setState({ text });
-        this.socket.emit('typing', { roomName: this.props.match.params.name, text });
+        setText(text);
+        socket.emit('typing', { roomName, text });
     }
 
-    renderEditor() {
-        let total = this.state.totalUsers;
+    function renderEditor() {
+        let total = totalUsers;
         let label = total === 1 ? 'Session' : 'Sessions';
         return (
             <div className="wrapper">
                 <div className="actions-container">
                     <InputActionable 
                         inputType="number" 
-                        inputValue={ this.props.match.params.name }
+                        inputValue={ props.match.params.name }
+                        btnDisabled= { tbnDisabled }
                         isInputDisabled={ true }
-                        onButtonClick={ this.copyRoomId }
-                        buttonText={ this.state.buttonCopyText }/>
+                        onButtonClick={ copyRoomId }
+                        buttonText={ buttonCopyText }/>
                     <div className="status-container">
                         <span className="text-white">
                             { total } { label }
@@ -114,12 +138,12 @@ class Room extends React.Component {
                     </div>
                     <Button 
                         text="GO BACK" 
-                        onClick={this.goToHome}/>
+                        onClick={ handleLeavingRoom }/>
                 </div>
                 <div className="editor-container">
                     <textarea
-                        onChange={ this.onEditorChange }
-                        value={ this.state.text }
+                        onChange={ onEditorChange }
+                        value={ text }
                         name="" 
                         id="" 
                         rows="10"/>0
@@ -128,7 +152,7 @@ class Room extends React.Component {
         );
     }
     
-    renderLoadingSpinner() {
+    function renderLoadingSpinner() {
         return (
             <div className="loader-box">
                 <ClipLoader
@@ -141,24 +165,22 @@ class Room extends React.Component {
         );
     }
 
-    onCloseSnackbar() {
-        console.log('click')
-        this.props.handleSnackbar('HIDE_SNACKBAR', '');
+    function onCloseSnackbar() {
+        props.handleSnackbar('HIDE_SNACKBAR', '');
+        goHome();
     }
 
-    renderSnackbar() {
-        console.log(this.props)
-        let options = this.props.snackbar;
-
+    function renderSnackbar() {
+        let options = props.snackbar;
         return (
             <Snackbar
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
                 open={ options.show } 
-                autoHideDuration={ 6000 }
-                onClose={ this.onCloseSnackbar } 
+                autoHideDuration={ 5000 }
+                onClose={ onCloseSnackbar } 
                 >
                 <Alert 
-                    onClose={ this.onCloseSnackbar }
+                    onClose={ onCloseSnackbar }
                     severity={ options.severity }
                     >
                     { options.message }
@@ -167,23 +189,22 @@ class Room extends React.Component {
         );
     }
 
-    render() {
-        let html = this.renderLoadingSpinner();
-        if(this.props.room.id != null) {
-            html = this.renderEditor();
-        }else if (!this.props.room.id) {
-            // TODO se esta ejecutando aun cuando la sala existe
-            setTimeout(() => {
-                this.goToHome();
-            }, 3000);
+    function handleRendering() {
+        let html = renderLoadingSpinner();
+        if(props.room.id != null) {
+            html = renderEditor();
         }
-        return (
-            <div className="room-container">
-                { html }
-                { this.renderSnackbar() }
-            </div>
-        );
+        return html;
     }
+
+    let html = handleRendering();
+
+    return (
+        <div className="room-container">
+            { html }
+            { renderSnackbar() }
+        </div>
+    )
 }
 
 const mapStateToProps = (state) => {
@@ -194,4 +215,4 @@ const mapStateToProps = (state) => {
     }
 }
 
-export default connect(mapStateToProps, { getRoom, handleSnackbar })(Room)
+export default connect(mapStateToProps, { getRoom, handleSnackbar, resetRoom })(Room)

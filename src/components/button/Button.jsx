@@ -19,6 +19,7 @@ class Button extends React.Component {
     render() {
          return (
             <button
+                disabled={ this.props.disabled }
                 className="main-btn"
                 onClick={this.props.onClick}>
                 <span>{this.props.text}</span>

@@ -21,6 +21,7 @@ class InputActionable extends React.Component {
                     onChange={ e => this.inputValue = e.target.value }
                     placeholder={ this.props.placeholder }/>
                 <Button
+                    disabled= { this.props.btnDisabled || false }
                     text={ this.props.buttonText } 
                     onClick={ e => this.props.onButtonClick(this.inputValue || this.props.inputValue) }
                     loading={ this.props.loading }/>

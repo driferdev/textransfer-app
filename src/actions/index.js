@@ -10,24 +10,30 @@ export const newRoom = (history) => {
                 pathname: '/room/'+response.data.room,
             });
         }).catch((err) => {
-            dispatch({type: 'SHOW_ERROR', payload: err.response.data.error});
+            let errMessage = 'Upps something went wrong';
+            if(err.response) {
+                errMessage = err.response.data.error;
+            }
+            dispatch({type: 'SHOW_ERROR', payload: errMessage});
             dispatch(roomSpinner('SHOW_ROOM_SPINNER', false));
         })
     }
 }
 
 export const getRoom = (id) => async (dispatch, _) => {
-    if(isNaN(id) || id <= 0) {
-        return;
-    }
-    dispatch(roomSpinner('SHOW_GET_ROOM_SPINNER', true));
-    apiGetRoom(id).then((response) => {
+    return apiGetRoom(id).then((response) => {
         dispatch({ type: 'ROOM_LOADED', payload: response.data });
     }).catch((err) => {
-        dispatch({type: 'SHOW_ERROR', payload: err.response.data.error});
-    }).finally(() => {
-        dispatch(roomSpinner('SHOW_GET_ROOM_SPINNER', false));
+        let message = 'upps something went wrong';
+        if(err.response) {
+            message = err.response.data.error;
+        }
+        dispatch({type: 'SHOW_ERROR', payload: message});
     });
+}
+
+export const resetRoom = () => async (dispatch, _) => {
+    dispatch({ type: 'RESET_ROOM' });
 }
 
 export const roomSpinner = (type, show) => {
