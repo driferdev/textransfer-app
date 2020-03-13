@@ -1,8 +1,6 @@
 import React from 'react';
 import { css } from "@emotion/core";
-import PropTypes from 'prop-types';
 import './Button.scss';
-import RouterContext from '../../contexts/RouterContext';
 import ClipLoader from "react-spinners/ClipLoader";
 
 const override = css`
@@ -12,31 +10,21 @@ const override = css`
     }
 `;
 
-class Button extends React.Component {
-    
-    static contextType = RouterContext;
+const Button = React.memo((props) => {
+    return (
+        <button
+            disabled={ props.disabled }
+            className="main-btn"
+            onClick={props.onClick}>
+            <span>{props.text}</span>
+            <ClipLoader
+                css={ override }
+                size={ 13 }
+                color={ "white" }
+                loading={ props.loading || false }
+            />
+        </button>
+    )
+});
 
-    render() {
-         return (
-            <button
-                disabled={ this.props.disabled }
-                className="main-btn"
-                onClick={this.props.onClick}>
-                <span>{this.props.text}</span>
-                <ClipLoader
-                    css={ override }
-                    size={ 13 }
-                    color={ "white" }
-                    loading={ this.props.loading || false }
-                />
-            </button>
-        );
-    }
-}
-
-Button.propTypes = {
-    text: PropTypes.string,
-    onClick: PropTypes.func,
-};
-
-export default Button
+export default Button;
