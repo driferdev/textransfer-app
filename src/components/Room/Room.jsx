@@ -10,10 +10,6 @@ import { getRoom, handleSnackbar, resetRoom } from '../../actions';
 import ClipLoader from "react-spinners/ClipLoader";
 import { css } from "@emotion/core";
 
-function Alert(props) {
-    return <MuiAlert elevation={6} variant="filled" {...props} />;
-}
-
 const override = css`
     @media only screen and (max-width: 420px){
         width: 30px;
@@ -179,12 +175,14 @@ const Room = (props) =>{
                 autoHideDuration={ 5000 }
                 onClose={ onCloseSnackbar } 
                 >
-                <Alert 
-                    onClose={ onCloseSnackbar }
-                    severity={ options.severity }
-                    >
-                    { options.message }
-                </Alert>
+                    <MuiAlert 
+                        elevation={6} 
+                        variant="filled"
+                        onClose={ onCloseSnackbar }
+                        severity={ options.severity }
+                        >
+                        { options.message }
+                    </MuiAlert>
             </Snackbar>
         );
     }
