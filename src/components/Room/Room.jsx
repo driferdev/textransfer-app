@@ -3,12 +3,11 @@ import './Room.scss';
 import InputActionable from '../InputActionable/InputActionable';
 import Button from '../Button/Button';
 import socketIOClient from "socket.io-client";
-import Snackbar from '@material-ui/core/Snackbar';
-import MuiAlert from '@material-ui/lab/Alert';
 import { connect } from 'react-redux';
 import { getRoom, handleSnackbar, resetRoom } from '../../actions';
 import ClipLoader from "react-spinners/ClipLoader";
 import { css } from "@emotion/core";
+import Snackbar from '../Snackbar/Snackbar';
 
 const override = css`
     @media only screen and (max-width: 420px){
@@ -170,20 +169,10 @@ const Room = (props) =>{
         let options = props.snackbar;
         return (
             <Snackbar
-                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-                open={ options.show } 
-                autoHideDuration={ 5000 }
-                onClose={ onCloseSnackbar } 
-                >
-                    <MuiAlert 
-                        elevation={6} 
-                        variant="filled"
-                        onClose={ onCloseSnackbar }
-                        severity={ options.severity }
-                        >
-                        { options.message }
-                    </MuiAlert>
-            </Snackbar>
+                open={options.show}
+                onClose={ onCloseSnackbar }
+                severity={ options.severity }
+                message={ options.message }/>
         );
     }
 
