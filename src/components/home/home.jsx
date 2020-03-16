@@ -41,7 +41,7 @@ const Home = (props) => {
         <div className="main-container">
             <div className="description">
                 <p className="text-white">
-                    Share text between devices instantly with Clipbord
+                    Share text between devices instantly with TexTransfer
                 </p>
             </div>
             <Button text="NEW ROOM"
