@@ -11,7 +11,7 @@ export const newRoom = (history) => {
             });
         }).catch((err) => {
             let errMessage = 'Upps something went wrong';
-            if(err.response.data.error) {
+            if(err.response) {
                 errMessage = err.response.data.error;
             }
             dispatch({type: 'SHOW_ERROR', payload: errMessage});
