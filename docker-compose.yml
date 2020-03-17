@@ -1,12 +1,12 @@
 version: '2'
 services:
     web:
-        container_name: app_textransfer
+        container_name: textransfer_app
         image: nginx:latest
         ports:
             - "8888:80"
         volumes:
-            - ./public:/var/www/html
+            - ./build:/var/www/html
             - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
         networks:
             default:
