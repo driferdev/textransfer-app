@@ -11,18 +11,14 @@ const Home = (props) => {
     const history = props.history;
     const loadRoom =  props.loadRoom;
     const [ socket, setSocket ] = useState(null);
+    const [ showSpinner, setShowSpinner ] = useState(false);
     const cleanSnackbar = props.cleanSnackbar;
     const showError = props.showError;
 
     const newRoom = useCallback(() => {
-        socket.on('roomGenerated', roomName => {
-            loadRoom(roomName);
-            history.push({
-                pathname: `/room/${roomName}`,
-            });
-        });
+        setShowSpinner(true);
         socket.emit('generateRoom');
-    }, [socket, history, loadRoom]);
+    }, [socket]);
 
     const onCloseSnackbar = useCallback(() => {
         cleanSnackbar();
@@ -63,6 +59,18 @@ const Home = (props) => {
         }
     }, [socket, showError]);
 
+    useEffect(() => {
+       if(socket != null) {
+            socket.on('roomGenerated', roomName => {
+                setShowSpinner(false);
+                loadRoom(roomName);
+                history.push({
+                    pathname: `/room/${roomName}`,
+                });
+            });
+       }
+    }, [socket, loadRoom, history]);
+
     return (
         <div className="main-container">
             <div className="description">
@@ -72,7 +80,7 @@ const Home = (props) => {
             </div>
             <Button text="NEW ROOM"
                 onClick={ newRoom }
-                loading={ false }/>
+                loading={ showSpinner }/>
             <div className="space"></div>
             <InputActionable
                 inputType="number"
@@ -93,6 +101,7 @@ const mapStateToProps = (state) => {
         newRoomSpinner: state.newRoomSpinner,
         goRoomSpinner: state.goRoomSpinner,
         snackbar: state.snackBar,
+        room: state.room,
     }
 }
 
