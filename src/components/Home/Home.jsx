@@ -1,22 +1,32 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import './Home.scss';
 import Button from '../Button/Button';
 import InputActionable from '../InputActionable/InputActionable';
 import { connect } from 'react-redux';
-import { newRoom, handleSnackbar } from '../../actions';
+import { loadRoom, handleSnackbar, cleanSnackbar, showError } from '../../actions';
 import Snackbar from '../Snackbar/Snackbar';
+import socketIOClient from "socket.io-client";
 
 const Home = (props) => {
-
-    const newRoomProp = props.newRoom;
-    const handleSnackBarProp = props.handleSnackbar;
     const history = props.history;
-    
-    const newRoom = useCallback(() => newRoomProp(history), [newRoomProp, history]);
+    const loadRoom =  props.loadRoom;
+    const [ socket, setSocket ] = useState(null);
+    const cleanSnackbar = props.cleanSnackbar;
+    const showError = props.showError;
+
+    const newRoom = useCallback(() => {
+        socket.on('roomGenerated', roomName => {
+            loadRoom(roomName);
+            history.push({
+                pathname: `/room/${roomName}`,
+            });
+        });
+        socket.emit('generateRoom');
+    }, [socket, history, loadRoom]);
 
     const onCloseSnackbar = useCallback(() => {
-        handleSnackBarProp('HIDE_SNACKBAR', '')
-    }, [handleSnackBarProp]);
+        cleanSnackbar();
+    }, [cleanSnackbar]);
 
     const goToRoom = useCallback((id) => {
         history.push({
@@ -37,6 +47,22 @@ const Home = (props) => {
         }
     }
     
+    useEffect(() => {
+        cleanSnackbar();
+        setSocket(socketIOClient(process.env.REACT_APP_WEB_SOCKET_URL));
+        return () => {
+            setSocket(null);
+        }
+    }, [cleanSnackbar]);
+
+    useEffect(() => {
+        if(socket != null) {
+            socket.on('connect_error', function() {
+                showError('Sorry, there seems to be an issue with the connection!');
+             });
+        }
+    }, [socket, showError]);
+
     return (
         <div className="main-container">
             <div className="description">
@@ -46,7 +72,7 @@ const Home = (props) => {
             </div>
             <Button text="NEW ROOM"
                 onClick={ newRoom }
-                loading={ props.newRoomSpinner }/>
+                loading={ false }/>
             <div className="space"></div>
             <InputActionable
                 inputType="number"
@@ -70,4 +96,4 @@ const mapStateToProps = (state) => {
     }
 }
 
-export default connect(mapStateToProps, { newRoom, handleSnackbar })(Home)
+export default connect(mapStateToProps, { loadRoom, handleSnackbar, cleanSnackbar, showError })(Home)

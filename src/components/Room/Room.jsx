@@ -4,7 +4,7 @@ import InputActionable from '../InputActionable/InputActionable';
 import Button from '../Button/Button';
 import socketIOClient from "socket.io-client";
 import { connect } from 'react-redux';
-import { getRoom, handleSnackbar, resetRoom } from '../../actions';
+import { loadRoom, handleSnackbar, resetRoom, showError } from '../../actions';
 import ClipLoader from "react-spinners/ClipLoader";
 import { css } from "@emotion/core";
 import Snackbar from '../Snackbar/Snackbar';
@@ -26,13 +26,34 @@ const Room = (props) =>{
     const [ tbnDisabled, setBtnDisabled ] = useState(false);
 
     const roomNameParam = +props.match.params.name;
-    const roomName = props.room.id;
+    const roomName = props.room.name;
     const history = props.history;
-    const getRoomProp =  props.getRoom;
-    
+    const loadRoom =  props.loadRoom;
+    const showError = props.showError;
+
+    useEffect(() => {
+        setSocket(socketIOClient(process.env.REACT_APP_WEB_SOCKET_URL));
+        return () => {
+            setSocket(null);
+        }
+    }, []);
 
     const goHome = useCallback(() => history.push('/'), [history]);
-    const getRoom = useCallback((roomName) => getRoomProp(roomName), [getRoomProp]);
+    
+    const getRoom = useCallback((roomName) => {
+        if(socket) {
+            socket.on('roomExists', (data) => {
+                if(data.exists) {
+                    loadRoom(data.room);
+                }else {
+                    console.log('show errors')
+                    showError('Something went wrong!');
+                }
+            });
+            socket.emit('getRoom', roomName);
+        }
+    }, [socket, loadRoom, showError]);
+    
     const listenWebSocketEvents = useCallback(() => {
         socket.on("roomData", data => {
             setTotalUsers(data.totalUsers);
@@ -45,15 +66,6 @@ const Room = (props) =>{
         });
         socket.emit('join', { roomName });
     }, [roomName, socket]);
-
-    useEffect(() => {
-        if(roomName != null) {
-            setSocket(socketIOClient(process.env.REACT_APP_WEB_SOCKET_URL));
-        }
-        return () => {
-            setSocket(null);
-        }
-    }, [roomName]);
 
     useEffect(() => {
         if(isNumber(roomNameParam) && roomName === null) {
@@ -76,7 +88,14 @@ const Room = (props) =>{
         }
     }, [roomName, listenWebSocketEvents, socket]);
 
-    
+    useEffect(() => {
+        if(socket != null) {
+            socket.on('connect_error', function() {
+                showError('Sorry, there seems to be an issue with the connection!');
+             });
+        }
+    }, [socket, showError]);
+
     function copyRoomId(id) {
         setBtnDisabled(true);
         let elem = document.createElement('input');
@@ -161,7 +180,6 @@ const Room = (props) =>{
     }
 
     function onCloseSnackbar() {
-        props.handleSnackbar('HIDE_SNACKBAR', '');
         goHome();
     }
 
@@ -178,7 +196,7 @@ const Room = (props) =>{
 
     function handleRendering() {
         let html = renderLoadingSpinner();
-        if(props.room.id != null) {
+        if(roomName != null) {
             html = renderEditor();
         }
         return html;
@@ -202,4 +220,9 @@ const mapStateToProps = (state) => {
     }
 }
 
-export default connect(mapStateToProps, { getRoom, handleSnackbar, resetRoom })(Room)
+export default connect(mapStateToProps, { 
+    loadRoom, 
+    handleSnackbar, 
+    resetRoom,
+    showError
+ })(Room)

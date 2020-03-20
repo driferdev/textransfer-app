@@ -1,22 +1,8 @@
-import { createRoom, apiGetRoom } from '../services/api';
+import { apiGetRoom } from '../services/api';
 
-export const newRoom = (history) => {
+export const loadRoom = (roomName) => {
     return async (dispatch, _) => {
-        dispatch(roomSpinner('SHOW_ROOM_SPINNER', true));
-        createRoom().then((response) => {
-            dispatch({ type: 'ROOM_LOADED', payload: response.data });
-            dispatch(roomSpinner('SHOW_ROOM_SPINNER', false));
-            history.push({
-                pathname: '/room/'+response.data.room,
-            });
-        }).catch((err) => {
-            let errMessage = 'Upps something went wrong';
-            if(err.response) {
-                errMessage = err.response.data.error;
-            }
-            dispatch({type: 'SHOW_ERROR', payload: errMessage});
-            dispatch(roomSpinner('SHOW_ROOM_SPINNER', false));
-        })
+        dispatch({ type: 'ROOM_LOADED', payload: roomName });
     }
 }
 
@@ -43,6 +29,14 @@ export const roomSpinner = (type, show) => {
     }
 }
 
-export const handleSnackbar = (type, payload) => {
-    return { type, payload }
+export const showError = (message) => async (dispatch, _) => {
+    dispatch({ type: 'SHOW_ERROR',  payload: message });
+}
+
+export const cleanSnackbar = () => async (dispatch, _) => {
+    dispatch({ type: 'HIDE_SNACKBAR',  payload: '' });
+}
+
+export const handleSnackbar = (type, payload) => async (dispatch, _) => {
+    dispatch({ type,  payload});
 }

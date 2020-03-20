@@ -1,23 +1,23 @@
 import { combineReducers } from 'redux';
 
 const roomReducer = (state , action) => {
-    let data = {
-        id: null
+    let room = {
+        name: null
     }
     if(action.type === 'ROOM_LOADED') {
         return Object.assign({}, state, {
-            id: action.payload.room
+            name: action.payload
         });
     } else if (action.type === 'ROOM_ERROR') {
-        return Object.assign(data, state, {
-            id: false
+        return Object.assign(room, state, {
+            name: false
         });
     } else if (action.type === 'RESET_ROOM') {
-        return Object.assign(data, state, {
-            id: null
+        return Object.assign(room, state, {
+            name: null
         });
     }
-    return Object.assign(data, state);
+    return Object.assign(room, state);
 }
 
 const goToRoomReducer = (id = '', action) => {
